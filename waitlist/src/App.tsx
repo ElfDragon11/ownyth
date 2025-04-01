@@ -1,106 +1,84 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ArrowRight, Book, Film, Tv, Lock, RefreshCw, Wallet } from 'lucide-react';
 import { Logo } from './components/Logo';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { insertWaitlistSchema } from "../shared/schema";
+import { insertWaitlistSchema, type InsertWaitlist } from "../shared/schema";
 import { useSearchParams } from "react-router-dom";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
-  //const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const source = searchParams.get("src") || "Website";
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    Hp: '',
-    mediaPreference: '',
-    userType: '',
-    source: source,
-  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-  
-    const payload = {
-      fullName: formData.name,
-      email: formData.email,
-      source: formData.source,
-      preferredContent: formData.mediaPreference,
-      role: formData.userType,
-    };
-  
-    try {
-      const response = await fetch('/ownyth/server/addWaitlistSignup.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-  
-      const data = await response.json();
-  
-      if (data.success) {
-        console.log('User added successfully');
-        // Optionally, you can update the UI here, e.g., clear the form or display a success message.
-      } else {
-        console.error('Error:', data.message);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-    
-  };
-  const form = useForm({
+  const form = useForm<InsertWaitlist>({
     resolver: zodResolver(insertWaitlistSchema),
     defaultValues: {
-        email: "",
-        fullName: "",
-        Hp: "",
-        source: source
+      email: "",
+      fullName: "",
+      Hp: "",
+      source: source,
+      mediaPreference: "",
+      userType: ""
     }
-});
+  });
 
   const joinWaitlist = useMutation({
-    mutationFn: async (data: {
-        email: string;
-        fullName: string;
-        Hp: string;
-        source: string;
-    }) => {
-        if (data.Hp !== "") {
-            console.log("Spam detected! Blocking submission.");
-            throw new Error("Spam detected! Submission blocked.");
-        } else {
-            await fetch("/server/addUser.php", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            });
-        }
+    mutationFn: async (data: InsertWaitlist) => {
+      if (data.Hp !== "") {
+        console.log("Spam detected! Blocking submission.");
+        throw new Error("Spam detected! Submission blocked.");
+      }
+      
+      const response = await fetch("/server/addWaitlistSignup.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit form');
+      }
+      return response.json();
     },
-    onSuccess: () => {
-        /*toast({
-            title: "Success!",
-            description: "You've been added to the waitlist."
-        });*/
+    onSuccess: (result) => {
+      if(result.success){ 
+        toast.success("You've been added to the waitlist!");
         form.reset();
+      }else{
+        toast.error("Error: " + result.message);
+      }
+
     },
     onError: (error: Error) => {
-        /*toast({
-            title: "Error",
-            description: error.message,
-            variant: "destructive"
-        });*/
+      console.log(error);
+      toast.error(error.message || "Something went wrong. Please try again.");
     }
-});
+  });
+
+  const onSubmit = form.handleSubmit((data) => {
+    joinWaitlist.mutate(data);
+  });
 
   return (
     <div className="min-h-screen bg-[#1C1C1E] text-[#F3F3F4]">
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
+
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#1C1C1E]/80 backdrop-blur-lg border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -119,14 +97,11 @@ function App() {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img 
-            // Dev image path 
-            //src="/images/heroImage.png"
             src="./images/heroImage.png"
             alt=""
             className="w-full h-full object-cover object-center"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-[#1C1C1E] via-[#1C1C1E]/35 to-[#1C1C1E]"></div>
-          {/*<div className="absolute inset-0 bg-gradient-to-br from-[#9055FF]/20 to-[#4F3CFF]/20"></div>*/}
         </div>
 
         {/* Floating Elements */}
@@ -230,17 +205,18 @@ function App() {
           <h2 className="text-4xl font-bold text-center mb-8">Join the Waitlist</h2>
           <p className="text-center text-[#A6A6A8] mb-12">Be among the first to experience true digital ownership.</p>
           
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={onSubmit} className="space-y-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium mb-2">Name</label>
+              <label htmlFor="fullName" className="block text-sm font-medium mb-2">Name</label>
               <input
                 type="text"
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                id="fullName"
+                {...form.register("fullName")}
                 className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:border-[#3F8CFF] focus:ring-1 focus:ring-[#3F8CFF] transition-all"
-                required
               />
+              {form.formState.errors.fullName && (
+                <p className="mt-1 text-red-500">{form.formState.errors.fullName.message}</p>
+              )}
             </div>
             
             <div>
@@ -248,19 +224,19 @@ function App() {
               <input
                 type="email"
                 id="email"
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                {...form.register("email")}
                 className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:border-[#3F8CFF] focus:ring-1 focus:ring-[#3F8CFF] transition-all"
-                required
               />
+              {form.formState.errors.email && (
+                <p className="mt-1 text-red-500">{form.formState.errors.email.message}</p>
+              )}
             </div>
 
             <div>
               <label htmlFor="mediaPreference" className="block text-sm font-medium mb-2">What kind of media do you care most about?</label>
               <select
                 id="mediaPreference"
-                value={formData.mediaPreference}
-                onChange={(e) => setFormData({...formData, mediaPreference: e.target.value})}
+                {...form.register("mediaPreference")}
                 className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:border-[#3F8CFF] focus:ring-1 focus:ring-[#3F8CFF] transition-all"
               >
                 <option value="" className="text-black">Select an option</option>
@@ -269,14 +245,16 @@ function App() {
                 <option value="shows" className="text-black">TV Shows</option>
                 <option value="all" className="text-black">All of the above</option>
               </select>
+              {form.formState.errors.mediaPreference && (
+                <p className="mt-1 text-red-500">{form.formState.errors.mediaPreference.message}</p>
+              )}
             </div>
 
             <div>
               <label htmlFor="userType" className="block text-sm font-medium mb-2">Are you a creator or a consumer?</label>
               <select
                 id="userType"
-                value={formData.userType}
-                onChange={(e) => setFormData({...formData, userType: e.target.value})}
+                {...form.register("userType")}
                 className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:border-[#3F8CFF] focus:ring-1 focus:ring-[#3F8CFF] transition-all"
               >
                 <option value="" className="text-black">Select an option</option>
@@ -284,13 +262,20 @@ function App() {
                 <option value="consumer" className="text-black">Consumer</option>
                 <option value="both" className="text-black">Both</option>
               </select>
+              {form.formState.errors.userType && (
+                <p className="mt-1 text-red-500">{form.formState.errors.userType.message}</p>
+              )}
             </div>
+
+            <input type="text" {...form.register("Hp")} className="hidden" />
+            <input type="hidden" {...form.register("source")} />
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-[#9055FF] to-[#4F3CFF] hover:from-[#4050a3] hover:to-[#4050a3] text-white font-semibold px-8 py-4 rounded-lg text-lg transition-all duration-300 flex items-center justify-center gap-2 "
+              disabled={joinWaitlist.isPending}
+              className="w-full bg-gradient-to-r from-[#9055FF] to-[#4F3CFF] hover:from-[#4050a3] hover:to-[#4050a3] text-white font-semibold px-8 py-4 rounded-lg text-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              Get Early Access
+              {joinWaitlist.isPending ? 'Submitting...' : 'Get Early Access'}
               <ArrowRight className="w-5 h-5" />
             </button>
           </form>

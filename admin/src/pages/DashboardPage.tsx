@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'wouter';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,12 +10,13 @@ interface WaitlistEntry {
   full_name: string;
   date_added: string;
   source: string;
+  preferred_content: string;
+  role: string;
 }
 
 const ITEMS_PER_PAGE = 10;
 
 export function DashboardPage() {
-  const [, setLocation] = useLocation();
   const { isAuthenticated, logout } = useAuth();
   const [entries, setEntries] = useState<WaitlistEntry[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,10 +27,10 @@ export function DashboardPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    //console.log("DashboardPage isAuthenticated:", isAuthenticated);
+    console.log("DashboardPage is Authenticated:", isAuthenticated);
     if (!isAuthenticated) {
-      setLocation('/ownyth/login'); // Redirect if not authenticated
-      navigate("/ownyth/dashboard"); // Redirect after successful login
+      console.log("User is not authenticated, redirecting to login...");
+      navigate("/login"); 
       return;
     }
 
@@ -38,7 +38,7 @@ export function DashboardPage() {
     const fetchWaitlist = async () => {
       //console.log("Fetching waitlist...");
       try {
-        const response = await fetch("/ownyth/server/getWaitlist.php");
+        const response = await fetch("/server/getWaitlist.php");
         const text = await response.text();
         //console.log("Raw Response:", text);
 
@@ -61,12 +61,12 @@ export function DashboardPage() {
     };
 
     fetchWaitlist();
-  }, [isAuthenticated, setLocation]);
+  }, []);
 
   const handleLogout = () => {
-    setLocation('/ownyth/login');
-    navigate("/ownyth/admin");
     logout();
+    navigate("/login");
+ 
   };
 
   const handleDelete = async (id: number) => {
@@ -74,7 +74,7 @@ export function DashboardPage() {
     if (!isConfirmed) return;
   
     try {
-      const response = await fetch(`/ownyth/server/deleteUser.php`, {
+      const response = await fetch(`/server/deleteUser.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
@@ -103,6 +103,8 @@ export function DashboardPage() {
       full_name: newName,
       date_added: new Date().toISOString(),
       source: newSource,
+      preferred_content: '',
+      role: '',
     };
     setEntries([newEntry, ...entries]);
     setTotalEntries(prev => prev + 1);
@@ -126,7 +128,7 @@ export function DashboardPage() {
           </Button>
         </div>
 
-        <div className="bg-[#262627] rounded-lg shadow p-6 mb-8">
+        {/*<div className="bg-[#262627] rounded-lg shadow p-6 mb-8">
           <h2 className="text-xl text-[#F3F3F4] font-semibold mb-4">Add New Entry</h2>
           <form onSubmit={handleAdd} className="flex gap-4" >
             <Input
@@ -147,7 +149,7 @@ export function DashboardPage() {
             />
             <Button type="submit">Add Entry</Button>
           </form>
-        </div>
+        </div>*/}
 
         <div className="bg-[#262627] rounded-lg shadow">
           <div className="p-6 border-b">
@@ -172,6 +174,12 @@ export function DashboardPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-[#F3F3F4] uppercase tracking-wider">
                     Source
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#F3F3F4] uppercase tracking-wider">
+                    Content Preference
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#F3F3F4] uppercase tracking-wider">
+                    Role
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-[#F3F3F4] uppercase tracking-wider">
                     Actions
                   </th>
@@ -186,6 +194,8 @@ export function DashboardPage() {
                       {new Date(entry.date_added).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-[#F3F3F4]">{entry.source}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-[#F3F3F4]">{entry.preferred_content}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-[#F3F3F4]">{entry.role}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <Button
                         variant="destructive"

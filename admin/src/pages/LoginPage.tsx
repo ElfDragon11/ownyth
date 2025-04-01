@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useLocation } from 'wouter';
+import { useEffect, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/lib/auth'; // Ensure this points to your updated auth.ts
@@ -9,9 +9,15 @@ export function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [, setLocation] = useLocation();
-  const { login } = useAuth(); // Use updated useAuth hook
+  const { isAuthenticated, login } = useAuth(); // Use updated useAuth hook
   const navigate = useNavigate();
+
+    useEffect(() => {
+      if (isAuthenticated) {
+        navigate("/dashboard"); // Redirect to dashboard if already authenticated
+        return;
+      }
+    }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,9 +25,9 @@ export function LoginPage() {
 
     const success = await login(username, password);
     if (success) {
-      console.log('Login successful');
-      setLocation('/ownyth/dasboard');
-      navigate("/ownyth/dashboard"); // Redirect after successful login
+      //console.log('Login successful', success);
+      navigate("/dashboard"); // Redirect after successful login
+      return;
     } else {
       setError('Invalid credentials');
     }

@@ -6,11 +6,7 @@ header("Access-Control-Allow-Headers: Content-Type");
 
 include 'db.php';
 
-/*ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);*/
 
-//echo("<h1>this<h1/>");
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $data = json_decode(file_get_contents("php://input"), true);
     //echo($data);

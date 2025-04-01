@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
-  base: '/ownyth/admin/', // absolute path for assets
+  base: '/admin/', // absolute path for assets
   build: {
     outDir: 'dist',     // index.html and assets will be in the "waitlist" folder
     assetsDir: 'assets'

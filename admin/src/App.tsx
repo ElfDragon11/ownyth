@@ -6,9 +6,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/ownyth/login" element={<LoginPage />} />
-        <Route path="/ownyth/dashboard" element={<DashboardPage />} />
-        <Route path="ownyth/*" element={<Navigate to="/ownyth/login" />} /> {/* Redirect to login by default */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="*" element={<Navigate to="/login" />} /> {/* Redirect to login by default */}
       </Routes>
     </Router>
   );
