@@ -238,7 +238,7 @@ function App() {
             </div>
 
             <div>
-              <label htmlFor="mediaPreference" className="block text-sm font-medium mb-2">What kind of digital content do you care most about?</label>
+              <label htmlFor="mediaPreference" className="block text-sm font-medium mb-2">What kind of online content do you care most about?</label>
               <select
                 id="mediaPreference"
                 {...form.register("mediaPreference")}
@@ -246,10 +246,10 @@ function App() {
                 aria-describedby="mediaPreference-error"
               >
                 <option value="" className="text-black">Select an option</option>
-                <option value="books" className="text-black">Digital Books</option>
-                <option value="movies" className="text-black">Digital Movies</option>
-                <option value="shows" className="text-black">Digital TV Shows</option>
-                <option value="all" className="text-black">All Digital Content</option>
+                <option value="books" className="text-black">Books</option>
+                <option value="movies" className="text-black">Movies</option>
+                <option value="shows" className="text-black">TV Shows</option>
+                <option value="all" className="text-black">All Content</option>
               </select>
               {form.formState.errors.mediaPreference && (
                 <p id="mediaPreference-error" className="mt-1 text-red-500">{form.formState.errors.mediaPreference.message}</p>
@@ -265,9 +265,9 @@ function App() {
                 aria-describedby="userType-error"
               >
                 <option value="" className="text-black">Select an option</option>
-                <option value="creator" className="text-black">Digital Content Creator</option>
-                <option value="consumer" className="text-black">Digital Content Consumer</option>
-                <option value="both" className="text-black">Both Creator and Consumer</option>
+                <option value="creator" className="text-black">Content Creator</option>
+                <option value="consumer" className="text-black">Consumer</option>
+                <option value="both" className="text-black">Both</option>
               </select>
               {form.formState.errors.userType && (
                 <p id="userType-error" className="mt-1 text-red-500">{form.formState.errors.userType.message}</p>
@@ -283,7 +283,7 @@ function App() {
               className="w-full bg-gradient-to-r from-[#9055FF] to-[#4F3CFF] hover:from-[#4050a3] hover:to-[#4050a3] text-white font-semibold px-8 py-4 rounded-lg text-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
               aria-live="polite"
             >
-              {joinWaitlist.isPending ? 'Submitting...' : 'Get Early Access to Digital Ownership'}
+              {joinWaitlist.isPending ? 'Submitting...' : 'Get Early Access'}
               <ArrowRight className="w-5 h-5" aria-hidden="true" />
             </button>
           </form>
